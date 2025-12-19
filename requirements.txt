@@ -1,0 +1,7 @@
+python>=3.10
+neurokit2==0.2.7
+pysr==0.18.0
+numpy
+pandas
+scipy
+matplotlib

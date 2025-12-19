@@ -1,0 +1,13 @@
+# Ambienti Virtuali
+venv/
+.env
+__pycache__/
+
+# Dati e Modelli (Esempi)
+data/
+*.pth
+*.h5
+*.checkpoint
+
+# VS Code
+.vscode/
