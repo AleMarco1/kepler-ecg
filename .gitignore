@@ -1,7 +1,6 @@
 # Ambienti Virtuali
 .venv/
 .git/
-setup_progetto.ipynb
 
 data/
 
