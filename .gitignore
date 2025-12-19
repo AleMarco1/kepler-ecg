@@ -1,13 +1,8 @@
 # Ambienti Virtuali
-venv/
-.env
-__pycache__/
+.venv/
+.git/
+setup_progetto.ipynb
 
-# Dati e Modelli (Esempi)
 data/
-*.pth
-*.h5
-*.checkpoint
 
-# VS Code
-.vscode/
+__pycache__/
