@@ -9,6 +9,7 @@ data/
 
 # Script di configurazione specifica
 setup_project.ipynb
+pipeline.ipynb
 
 # File temporanei Python e Notebook
 __pycache__/
