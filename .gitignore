@@ -1,7 +1,16 @@
-# Ambienti Virtuali
+# Ambiente virtuale
 .venv/
-.git/
 
+# Dati e Dataset (PhysioNet, ecc.)
 data/
 
+# Cartella di sistema Git
+.git/
+
+# Script di configurazione specifica
+setup_progetto.ipynb
+
+# File temporanei Python e Notebook
 __pycache__/
+*.pyc
+.ipynb_checkpoints/
