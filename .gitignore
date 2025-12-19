@@ -8,7 +8,7 @@ data/
 .git/
 
 # Script di configurazione specifica
-setup_progetto.ipynb
+setup_project.ipynb
 
 # File temporanei Python e Notebook
 __pycache__/

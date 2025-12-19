@@ -1,7 +1,10 @@
-python>=3.10
 neurokit2==0.2.7
 pysr==0.18.0
-numpy
+numpy==1.26.4
+opencv-python>=4.8,<4.10
 pandas
 scipy
 matplotlib
+ipykernel
+scikit-learn
+wfdb
