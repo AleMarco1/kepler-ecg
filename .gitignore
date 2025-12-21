@@ -4,6 +4,9 @@
 # Dati e Dataset (PhysioNet, ecc.)
 data/
 
+# Cartelle persomnali
+docs/
+
 # Cartella di sistema Git
 .git/
 
