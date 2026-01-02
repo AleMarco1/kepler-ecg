@@ -1,0 +1,21 @@
+{
+  "dataset_name": "cpsc-2018",
+  "dataset_dir": "./data/raw/cpsc-2018",
+  "format": "mat",
+  "sampling_rate": 500,
+  "n_records_found": 6877,
+  "n_processed": 6877,
+  "n_successful": 6877,
+  "n_usable": 6877,
+  "n_failed": 0,
+  "success_rate": 1.0,
+  "usable_rate": 1.0,
+  "total_time_sec": 245.4321117401123,
+  "throughput_ecg_per_sec": 28.019968337647867,
+  "quality_distribution": {
+    "acceptable": 4442,
+    "good": 2432,
+    "poor": 3
+  },
+  "failed_ids": []
+}

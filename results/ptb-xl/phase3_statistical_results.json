@@ -1,0 +1,22 @@
+{
+  "comp_sig_gzip_ratio": {
+    "f_statistic": 689.4995558174094,
+    "p_value": 6.54388602618515e-148,
+    "significant": "True"
+  },
+  "comp_sig_hjorth_complexity": {
+    "f_statistic": 1482.0414567419357,
+    "p_value": 0.0,
+    "significant": "True"
+  },
+  "comp_sig_bzip2_ratio": {
+    "f_statistic": 854.1630950843289,
+    "p_value": 1.420257488095181e-183,
+    "significant": "True"
+  },
+  "comp_rr_approx_entropy": {
+    "f_statistic": 153.55469536666712,
+    "p_value": 3.522692177312782e-32,
+    "significant": "True"
+  }
+}

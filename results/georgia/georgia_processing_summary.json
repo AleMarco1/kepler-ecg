@@ -1,0 +1,21 @@
+{
+  "dataset_name": "georgia",
+  "dataset_dir": "./data/raw/georgia",
+  "format": "mat",
+  "sampling_rate": 500,
+  "n_records_found": 10344,
+  "n_processed": 10344,
+  "n_successful": 10344,
+  "n_usable": 10344,
+  "n_failed": 0,
+  "success_rate": 1.0,
+  "usable_rate": 1.0,
+  "total_time_sec": 268.1686432361603,
+  "throughput_ecg_per_sec": 38.57274241750424,
+  "quality_distribution": {
+    "good": 3543,
+    "acceptable": 6800,
+    "poor": 1
+  },
+  "failed_ids": []
+}

@@ -4,8 +4,8 @@
 # Dati e Dataset (PhysioNet, ecc.)
 data/
 
-# Cartelle persomnali
-docs/
+# Cartelle personali
+
 
 # Cartella di sistema Git
 .git/
@@ -18,3 +18,4 @@ pipeline.ipynb
 __pycache__/
 *.pyc
 .ipynb_checkpoints/
+.pytest_cache

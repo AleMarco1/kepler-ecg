@@ -1,0 +1,21 @@
+{
+  "dataset_name": "chapman",
+  "dataset_dir": "./data/raw/chapman",
+  "format": "mat",
+  "sampling_rate": 500,
+  "n_records_found": 45152,
+  "n_processed": 45152,
+  "n_successful": 45152,
+  "n_usable": 45152,
+  "n_failed": 0,
+  "success_rate": 1.0,
+  "usable_rate": 1.0,
+  "total_time_sec": 1174.1120398044586,
+  "throughput_ecg_per_sec": 38.45629588085971,
+  "quality_distribution": {
+    "acceptable": 30621,
+    "good": 14527,
+    "poor": 4
+  },
+  "failed_ids": []
+}

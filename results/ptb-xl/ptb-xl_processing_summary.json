@@ -1,0 +1,20 @@
+{
+  "dataset_name": "ptb-xl",
+  "dataset_dir": "./data/raw/ptb-xl",
+  "format": "wfdb",
+  "sampling_rate": 500,
+  "n_records_found": 21798,
+  "n_processed": 21798,
+  "n_successful": 21798,
+  "n_usable": 21798,
+  "n_failed": 0,
+  "success_rate": 1.0,
+  "usable_rate": 1.0,
+  "total_time_sec": 620.8738672733307,
+  "throughput_ecg_per_sec": 35.10858025919095,
+  "quality_distribution": {
+    "good": 17233,
+    "acceptable": 4565
+  },
+  "failed_ids": []
+}

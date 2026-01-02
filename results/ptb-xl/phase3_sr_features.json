@@ -1,0 +1,98 @@
+{
+  "suggested_features": [
+    "age",
+    "quality_score",
+    "morph_t_amplitude_mv",
+    "wav_wavelet_coef_max",
+    "wav_wavelet_qrs_peak",
+    "comp_sig_hjorth_complexity",
+    "comp_sig_hjorth_activity",
+    "morph_t_r_ratio",
+    "heart_rate_std",
+    "morph_qrs_area_mv_ms",
+    "rmssd"
+  ],
+  "n_features": 12,
+  "importance_summary": [
+    {
+      "feature": "diag_confidence",
+      "f_score": 885.9171691345922,
+      "combined_score": 1.0,
+      "final_rank": 1
+    },
+    {
+      "feature": "age",
+      "f_score": 214.04468293303043,
+      "combined_score": 0.45239555545106463,
+      "final_rank": 2
+    },
+    {
+      "feature": "quality_score",
+      "f_score": 374.66089661941874,
+      "combined_score": 0.44285700076335516,
+      "final_rank": 3
+    },
+    {
+      "feature": "morph_t_amplitude_mv",
+      "f_score": 215.25576697325505,
+      "combined_score": 0.3520572800960793,
+      "final_rank": 5
+    },
+    {
+      "feature": "wav_wavelet_coef_max",
+      "f_score": 298.6762037858719,
+      "combined_score": 0.29988422571129286,
+      "final_rank": 6
+    },
+    {
+      "feature": "wav_wavelet_qrs_peak",
+      "f_score": 130.83574841313046,
+      "combined_score": 0.26979973739060714,
+      "final_rank": 7
+    },
+    {
+      "feature": "comp_sig_hjorth_complexity",
+      "f_score": 207.4976083534955,
+      "combined_score": 0.20997228239048113,
+      "final_rank": 10
+    },
+    {
+      "feature": "comp_sig_hjorth_activity",
+      "f_score": 113.52360070973043,
+      "combined_score": 0.20652699827411228,
+      "final_rank": 11
+    },
+    {
+      "feature": "morph_t_r_ratio",
+      "f_score": 22.617913570870076,
+      "combined_score": 0.20648589347285473,
+      "final_rank": 12
+    },
+    {
+      "feature": "heart_rate_std",
+      "f_score": 118.57482823803883,
+      "combined_score": 0.18791025438077116,
+      "final_rank": 14
+    },
+    {
+      "feature": "morph_qrs_area_mv_ms",
+      "f_score": 122.73815683561529,
+      "combined_score": 0.18641365556309705,
+      "final_rank": 16
+    },
+    {
+      "feature": "rmssd",
+      "f_score": 99.01014756749697,
+      "combined_score": 0.18023582752403491,
+      "final_rank": 17
+    }
+  ],
+  "group_distribution": {
+    "compressibility_signal": 2,
+    "wavelet": 2,
+    "morphology": 3,
+    "basic": 3,
+    "other": 2
+  },
+  "max_pairwise_correlation": 0.8
+}

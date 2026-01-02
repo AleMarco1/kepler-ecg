@@ -1,0 +1,20 @@
+{
+  "dataset_name": "ltaf",
+  "dataset_dir": "./data/raw/ltaf",
+  "format": "wfdb",
+  "sampling_rate": 128,
+  "n_records_found": 84,
+  "n_processed": 84,
+  "n_successful": 84,
+  "n_usable": 84,
+  "n_failed": 0,
+  "success_rate": 1.0,
+  "usable_rate": 1.0,
+  "total_time_sec": 873.629400730133,
+  "throughput_ecg_per_sec": 0.0961506102356414,
+  "quality_distribution": {
+    "good": 68,
+    "excellent": 16
+  },
+  "failed_ids": []
+}
