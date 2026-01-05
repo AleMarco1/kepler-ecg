@@ -1,0 +1,11 @@
+ecg_id,error
+00243_hr,Failed to load signal
+00330_hr,Failed to load signal
+01606_hr,Failed to load signal
+02664_hr,Failed to load signal
+02670_hr,Failed to load signal
+02712_hr,Failed to load signal
+02737_hr,Failed to load signal
+04176_hr,Failed to load signal
+20592_hr,cannot convert float NaN to integer
+20830_hr,Too few R-peaks

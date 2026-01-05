@@ -1,0 +1,73 @@
+Struttura del progetto: C:\Users\amarconi\Desktop\kepler-ecg
+========================================
+├── .gitignore
+├── .pytest_cache
+│   ├── .gitignore
+│   ├── CACHEDIR.TAG
+│   ├── README.md
+│   └── v
+│       └── cache
+│           ├── lastfailed
+│           └── nodeids
+├── data
+│   └── raw
+│       ├── chapman
+│       ├── cpsc-2018
+│       ├── georgia
+│       ├── ltaf
+│       ├── mit-bih
+│       ├── ptb-xl
+│       └── qtdb
+├── docs
+│   ├── 00_Setup_project.ipynb
+│   └── 01_Pipeline.ipynb
+├── README.md
+├── requirements.txt
+├── results
+│   ├── chapman
+│   ├── cpsc-2018
+│   ├── georgia
+│   ├── ltaf
+│   ├── mit-bih
+│   ├── ptb-xl
+│   └── qtdb
+├── scripts
+│   ├── download_dataset.py
+│   ├── extract_features_dataset.py
+│   ├── process_dataset.py
+│   ├── run_sr_stream_a.py
+│   ├── run_sr_stream_b.py
+│   ├── task1_wave_delineation.py
+│   ├── task2_qtc_dataset_prep.py
+│   ├── task4_sr_qtc_discovery.py
+│   ├── task5_validation.py
+│   └── task6_report_integration.py
+└── src
+    ├── .gitkeep
+    ├── analysis
+    │   ├── __init__.py
+    │   ├── feature_selection.py
+    │   ├── pipeline.py
+    │   ├── sr_preparation.py
+    │   ├── statistical.py
+    │   └── visualization.py
+    ├── core
+    │   ├── __init__.py
+    │   ├── dataset_registry.py
+    │   └── label_schema.py
+    ├── discovery
+    ├── features
+    │   ├── __init__.py
+    │   ├── compressor.py
+    │   ├── diagnosis_mapper.py
+    │   ├── feature_pipeline.py
+    │   ├── morphological.py
+    │   ├── spectral.py
+    │   └── wavelet.py
+    └── preprocessing
+        ├── __init__.py
+        ├── filters.py
+        ├── hrv_preprocessing.py
+        ├── pipeline.py
+        ├── quality.py
+        └── segmentation.py

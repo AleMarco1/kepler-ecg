@@ -1,0 +1,80 @@
+{
+  "task": "SR Classification: NORM vs HYP",
+  "timestamp": "2026-01-04T09:49:11.195063",
+  "dataset": {
+    "n_samples": 2871,
+    "n_train": 739,
+    "n_test": 185,
+    "n_features": 47,
+    "features": [
+      "age",
+      "sex",
+      "quality_score",
+      "snr_db",
+      "heart_rate_bpm",
+      "heart_rate_std",
+      "n_beats",
+      "rr_mean_ms",
+      "rr_std_ms",
+      "rmssd",
+      "wav_wavelet_energy_approx",
+      "wav_wavelet_energy_d1",
+      "wav_wavelet_energy_d2",
+      "wav_wavelet_energy_d3",
+      "wav_wavelet_energy_d4",
+      "wav_wavelet_energy_d5",
+      "wav_wavelet_energy_d6",
+      "wav_wavelet_total_energy",
+      "wav_wavelet_energy_entropy",
+      "wav_wavelet_energy_concentration"
+    ]
+  },
+  "baseline": {
+    "threshold": 0.5,
+    "auc": 0.64247311827957,
+    "accuracy": 0.6054054054054054,
+    "sensitivity": 0.5760869565217391,
+    "specificity": 0.6344086021505376,
+    "precision": 0.6091954022988506,
+    "f1": 0.5921787709497207,
+    "tp": 53,
+    "tn": 59,
+    "fp": 34,
+    "fn": 39
+  },
+  "best_equation": {
+    "formula": "(wav_wavelet_coef_min * -0.10501412) + 0.50067914",
+    "complexity": 5,
+    "threshold": 0.4392048840867169,
+    "auc": 0.5729312762973353,
+    "accuracy": 0.5891891891891892,
+    "sensitivity": 0.8043478260869565,
+    "specificity": 0.3763440860215054,
+    "f1": 0.6607142857142857
+  },
+  "config": {
+    "niterations": 150,
+    "populations": 40,
+    "population_size": 50,
+    "maxsize": 20,
+    "parsimony": 0.005,
+    "binary_operators": [
+      "+",
+      "-",
+      "*",
+      "/"
+    ],
+    "unary_operators": [
+      "square",
+      "sqrt",
+      "abs",
+      "log"
+    ],
+    "test_size": 0.2,
+    "cv_folds": 5,
+    "random_state": 42
+  },
+  "output_files": [
+    "results\\georgia\\sr_classification\\sr_classification_hyp_equations.csv"
+  ]
+}

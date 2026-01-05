@@ -6,7 +6,9 @@ Modulo per l'estrazione di features avanzate da segnali ECG:
 - Wavelet (multi-scala)
 - Pipeline integrata
 - CompressibilityCalculator: calcolo metriche di compressibilità
-- DiagnosisMapper: mapping codici SCP-ECG a categorie
+
+Note: Per il mapping delle diagnosi, usare src.core.label_schema.LabelMapper
+che supporta sia SCP codes (PTB-XL) che SNOMED codes (Chapman, CPSC, Georgia).
 """
 
 from .morphological import MorphologicalExtractor, IntervalCalculator
@@ -16,10 +18,6 @@ from .compressor import CompressibilityCalculator, CompressibilityConfig
 from .feature_pipeline import (
     FeaturePipeline, FeatureConfig, ProcessedECG, FeatureVector,
     create_processed_ecg_from_dict, extract_features_from_raw
-)
-from .diagnosis_mapper import (
-    DiagnosisMapper, DiagnosisInfo, create_diagnosis_features,
-    DIAGNOSIS_CATEGORIES, DIAGNOSIS_SUBCATEGORIES, SCP_DESCRIPTIONS
 )
 
 __all__ = [
@@ -41,11 +39,4 @@ __all__ = [
     # Compressor
     'CompressibilityCalculator',
     'CompressibilityConfig',
-    # Diagnosis mapper
-    'DiagnosisMapper',
-    'DiagnosisInfo',
-    'create_diagnosis_features',
-    'DIAGNOSIS_CATEGORIES',
-    'DIAGNOSIS_SUBCATEGORIES',
-    'SCP_DESCRIPTIONS',
 ]

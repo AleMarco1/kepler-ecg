@@ -39,11 +39,12 @@ DIAGNOSIS_COLORS = {
     "HYP": "#9b59b6",    # Purple - hypertrophy
     "CD": "#3498db",     # Blue - conduction disturbance
     "STTC": "#f39c12",   # Orange - ST/T changes
+    "OTHER": "#1abc9c",  # Teal - other conditions
     "UNKNOWN": "#95a5a6", # Gray
 }
 
 # Diagnosis order for consistent plotting
-DIAGNOSIS_ORDER = ["NORM", "MI", "STTC", "CD", "HYP"]
+DIAGNOSIS_ORDER = ["NORM", "MI", "STTC", "CD", "HYP", "OTHER"]
 
 
 class ECGVisualizer:

@@ -7,8 +7,8 @@ This module implements R-peak detection and beat segmentation:
 - RR interval computation
 
 Author: Alessandro Marconi for Kepler-ECG Project
-Version: 1.0.0
-Issued on: December 2025
+Version: 1.0.1 - Fixed missing imports
+Issued on: January 2025
 
 References:
     Pan, J., & Tompkins, W. J. (1985). A real-time QRS detection algorithm.
@@ -18,7 +18,7 @@ References:
 from dataclasses import dataclass, field  # Decorators to automate class boilerplate and advanced field management
 from typing import Dict, List, Optional, Tuple, Union  # Advanced type hints for complex data structures
 import numpy as np                        # Industry-standard library for numerical operations and array handling
-from scipy.signal import find_peaks       # Algorithm to identify relative maxima within a signal (e.g., R-peaks in ECG)
+from scipy.signal import find_peaks, butter, sosfiltfilt  # FIX: Added butter and sosfiltfilt
 
 
 @dataclass
@@ -261,15 +261,6 @@ class PanTompkinsDetector:
             distance=min_distance
         )
         
-        if len(peaks) == 0:
-            # Try with lower threshold
-            threshold = 0.1 * np.max(integrated)
-            peaks, _ = find_peaks(
-                integrated,
-                height=threshold,
-                distance=min_distance
-            )
-        
         return peaks
     
     def _refine_peaks(
@@ -279,72 +270,40 @@ class PanTompkinsDetector:
         fs: int
     ) -> np.ndarray:
         """
-        Refine R-peak locations using the original signal.
-        
-        The Pan-Tompkins algorithm finds approximate QRS locations.
-        We refine by finding the actual maximum in the original signal
-        near each detected peak.
+        Refine R-peak locations by finding local maxima in original signal.
         """
         if len(peaks) == 0:
             return peaks
         
-        # Search window: ±50ms
+        # Search window: ±50ms around detected peak
         search_window = int(0.05 * fs)
         refined_peaks = []
         
         for peak in peaks:
             start = max(0, peak - search_window)
-            end = min(len(signal), peak + search_window)
+            end = min(len(signal), peak + search_window + 1)
             
-            # Find maximum in window (R-peak is usually positive)
+            # Find the actual R-peak (maximum) in the window
             window = signal[start:end]
+            local_max = np.argmax(np.abs(window))
+            refined_peak = start + local_max
             
-            # Check if R-peaks are positive or negative (inverted lead)
-            if np.abs(np.max(window)) >= np.abs(np.min(window)):
-                local_peak = start + np.argmax(window)
-            else:
-                local_peak = start + np.argmin(window)
-            
-            refined_peaks.append(local_peak)
+            refined_peaks.append(refined_peak)
         
-        # Remove duplicates and sort
-        refined_peaks = np.unique(refined_peaks)
-        
-        return refined_peaks
+        return np.array(refined_peaks, dtype=int)
     
-    def get_intermediate_signals(
-        self,
-        signal: np.ndarray,
-        fs: int
-    ) -> Dict[str, np.ndarray]:
-        """
-        Get intermediate signals from Pan-Tompkins algorithm.
-        
-        Useful for debugging and visualization.
-        """
-        if signal.ndim == 2:
-            signal = signal[:, 0]
-        
-        filtered = self._bandpass_filter(signal, fs)
-        derivative = self._differentiate(filtered)
-        squared = derivative ** 2
-        integrated = self._integrate(squared, fs)
-        
-        return {
-            'original': signal,
-            'filtered': filtered,
-            'derivative': derivative,
-            'squared': squared,
-            'integrated': integrated,
-        }
+    def __repr__(self) -> str:
+        return f"PanTompkinsDetector(bandpass=[{self.config.bandpass_low}, {self.config.bandpass_high}]Hz)"
 
 
 class BeatSegmenter:
     """
-    Segments ECG signal into individual beats.
+    Segments ECG into individual beats.
     
-    This class combines R-peak detection with beat extraction to produce
-    aligned beat waveforms suitable for feature extraction.
+    This class combines R-peak detection with beat extraction:
+    1. Detect R-peaks using Pan-Tompkins algorithm
+    2. Extract beats centered on each R-peak
+    3. Compute RR intervals and heart rate statistics
     
     Parameters
     ----------
@@ -355,8 +314,7 @@ class BeatSegmenter:
     -------
     >>> segmenter = BeatSegmenter()
     >>> result = segmenter(ecg_signal, fs=500)
-    >>> print(f"Detected {result.n_beats} beats")
-    >>> print(f"Heart rate: {result.heart_rate_bpm:.1f} bpm")
+    >>> print(f"Detected {result.n_beats} beats at {result.heart_rate_bpm:.1f} bpm")
     """
     
     def __init__(self, config: Optional[SegmentationConfig] = None):
@@ -370,16 +328,16 @@ class BeatSegmenter:
         lead: int = 0
     ) -> SegmentationResult:
         """
-        Segment ECG signal into beats.
+        Segment ECG into beats.
         
         Parameters
         ----------
         signal : np.ndarray
-            ECG signal. Can be 1D or 2D (n_samples, n_leads).
+            ECG signal. Can be 1D or 2D.
         fs : int
             Sampling frequency in Hz.
-        lead : int, default=0
-            Lead to use for R-peak detection (for multi-lead).
+        lead : int
+            Lead to use for R-peak detection.
             
         Returns
         -------

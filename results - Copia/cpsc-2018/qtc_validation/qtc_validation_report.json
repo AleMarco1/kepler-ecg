@@ -1,0 +1,540 @@
+{
+  "timestamp": "2026-01-04T19:55:14.821247",
+  "input_file": "results\\cpsc-2018\\qtc\\qtc_sr_dataset_all.csv",
+  "n_samples": 6450,
+  "hr_independence": {
+    "QTc_Bazett": {
+      "pearson_r": 0.0263,
+      "pearson_p": 0.034923319429638486,
+      "spearman_rho": 0.0855,
+      "abs_r": 0.0263
+    },
+    "QTc_Fridericia": {
+      "pearson_r": -0.2299,
+      "pearson_p": 4.2274383970223446e-78,
+      "spearman_rho": -0.206,
+      "abs_r": 0.2299
+    },
+    "QTc_Framingham": {
+      "pearson_r": -0.2146,
+      "pearson_p": 4.436215156123554e-68,
+      "spearman_rho": -0.2004,
+      "abs_r": 0.2146
+    },
+    "QTc_Hodges": {
+      "pearson_r": -0.0722,
+      "pearson_p": 6.545100821520202e-09,
+      "spearman_rho": -0.0988,
+      "abs_r": 0.0722
+    },
+    "QTc_Kepler_Linear": {
+      "pearson_r": -0.1152,
+      "pearson_p": 1.648886452575642e-20,
+      "spearman_rho": -0.0873,
+      "abs_r": 0.1152
+    },
+    "QTc_Kepler_Cubic": {
+      "pearson_r": -0.0653,
+      "pearson_p": 1.5127177496715162e-07,
+      "spearman_rho": -0.0496,
+      "abs_r": 0.0653
+    },
+    "QTc_Kepler_Factor": {
+      "pearson_r": -0.0218,
+      "pearson_p": 0.07948578936901551,
+      "spearman_rho": 0.0117,
+      "abs_r": 0.0218
+    }
+  },
+  "hr_bin_analysis": {
+    "QTc_Bazett": {
+      "40-60": {
+        "n": 636,
+        "mean": 398.48,
+        "std": 47.95,
+        "median": 399.57
+      },
+      "60-80": {
+        "n": 3161,
+        "mean": 398.36,
+        "std": 52.4,
+        "median": 403.08
+      },
+      "80-100": {
+        "n": 1909,
+        "mean": 407.82,
+        "std": 52.41,
+        "median": 413.84
+      },
+      "100-120": {
+        "n": 519,
+        "mean": 406.89,
+        "std": 51.36,
+        "median": 416.4
+      },
+      "120-150": {
+        "n": 221,
+        "mean": 378.18,
+        "std": 43.33,
+        "median": 370.34
+      },
+      "cross_bin_variation": {
+        "mean_of_means": 397.95,
+        "std_of_means": 10.66,
+        "range_of_means": 29.64
+      }
+    },
+    "QTc_Fridericia": {
+      "40-60": {
+        "n": 636,
+        "mean": 404.12,
+        "std": 48.19,
+        "median": 404.76
+      },
+      "60-80": {
+        "n": 3161,
+        "mean": 388.26,
+        "std": 50.89,
+        "median": 392.43
+      },
+      "80-100": {
+        "n": 1909,
+        "mean": 382.39,
+        "std": 49.16,
+        "median": 387.97
+      },
+      "100-120": {
+        "n": 519,
+        "mean": 369.47,
+        "std": 47.12,
+        "median": 377.68
+      },
+      "120-150": {
+        "n": 221,
+        "mean": 332.04,
+        "std": 38.76,
+        "median": 323.19
+      },
+      "cross_bin_variation": {
+        "mean_of_means": 375.26,
+        "std_of_means": 24.31,
+        "range_of_means": 72.08
+      }
+    },
+    "QTc_Framingham": {
+      "40-60": {
+        "n": 636,
+        "mean": 401.65,
+        "std": 49.99,
+        "median": 402.13
+      },
+      "60-80": {
+        "n": 3161,
+        "mean": 390.54,
+        "std": 48.45,
+        "median": 394.57
+      },
+      "80-100": {
+        "n": 1909,
+        "mean": 385.44,
+        "std": 43.31,
+        "median": 390.2
+      },
+      "100-120": {
+        "n": 519,
+        "mean": 372.36,
+        "std": 39.03,
+        "median": 378.76
+      },
+      "120-150": {
+        "n": 221,
+        "mean": 339.44,
+        "std": 30.32,
+        "median": 332.23
+      },
+      "cross_bin_variation": {
+        "mean_of_means": 377.89,
+        "std_of_means": 21.4,
+        "range_of_means": 62.21
+      }
+    },
+    "QTc_Hodges": {
+      "40-60": {
+        "n": 636,
+        "mean": 407.51,
+        "std": 49.66,
+        "median": 408.72
+      },
+      "60-80": {
+        "n": 3161,
+        "mean": 386.83,
+        "std": 48.45,
+        "median": 390.9
+      },
+      "80-100": {
+        "n": 1909,
+        "mean": 386.13,
+        "std": 43.26,
+        "median": 391.13
+      },
+      "100-120": {
+        "n": 519,
+        "mean": 387.45,
+        "std": 38.31,
+        "median": 394.59
+      },
+      "120-150": {
+        "n": 221,
+        "mean": 381.05,
+        "std": 29.71,
+        "median": 382.47
+      },
+      "cross_bin_variation": {
+        "mean_of_means": 389.79,
+        "std_of_means": 9.14,
+        "range_of_means": 26.46
+      }
+    },
+    "QTc_Kepler_Linear": {
+      "40-60": {
+        "n": 636,
+        "mean": 371.01,
+        "std": 50.35,
+        "median": 372.15
+      },
+      "60-80": {
+        "n": 3161,
+        "mean": 366.99,
+        "std": 48.51,
+        "median": 371.21
+      },
+      "80-100": {
+        "n": 1909,
+        "mean": 367.36,
+        "std": 43.26,
+        "median": 372.34
+      },
+      "100-120": {
+        "n": 519,
+        "mean": 357.95,
+        "std": 38.87,
+        "median": 364.65
+      },
+      "120-150": {
+        "n": 221,
+        "mean": 328.16,
+        "std": 30.13,
+        "median": 321.0
+      },
+      "cross_bin_variation": {
+        "mean_of_means": 358.29,
+        "std_of_means": 15.67,
+        "range_of_means": 42.85
+      }
+    },
+    "QTc_Kepler_Cubic": {
+      "40-60": {
+        "n": 636,
+        "mean": 373.1,
+        "std": 49.93,
+        "median": 373.53
+      },
+      "60-80": {
+        "n": 3161,
+        "mean": 365.27,
+        "std": 48.5,
+        "median": 369.57
+      },
+      "80-100": {
+        "n": 1909,
+        "mean": 367.73,
+        "std": 43.25,
+        "median": 372.91
+      },
+      "100-120": {
+        "n": 519,
+        "mean": 363.35,
+        "std": 38.6,
+        "median": 370.42
+      },
+      "120-150": {
+        "n": 221,
+        "mean": 341.26,
+        "std": 29.68,
+        "median": 336.1
+      },
+      "cross_bin_variation": {
+        "mean_of_means": 362.14,
+        "std_of_means": 10.94,
+        "range_of_means": 31.84
+      }
+    },
+    "QTc_Kepler_Factor": {
+      "40-60": {
+        "n": 636,
+        "mean": 372.82,
+        "std": 44.48,
+        "median": 373.48
+      },
+      "60-80": {
+        "n": 3161,
+        "mean": 364.08,
+        "std": 47.76,
+        "median": 368.24
+      },
+      "80-100": {
+        "n": 1909,
+        "mean": 369.09,
+        "std": 47.42,
+        "median": 374.58
+      },
+      "100-120": {
+        "n": 519,
+        "mean": 369.02,
+        "std": 46.49,
+        "median": 377.51
+      },
+      "120-150": {
+        "n": 221,
+        "mean": 347.3,
+        "std": 39.51,
+        "median": 341.43
+      },
+      "cross_bin_variation": {
+        "mean_of_means": 364.46,
+        "std_of_means": 9.02,
+        "range_of_means": 25.52
+      }
+    }
+  },
+  "cv_stability": {
+    "QTc_Bazett": {
+      "mean_r": 0.0259,
+      "std_r": 0.0205,
+      "min_r": -0.0014,
+      "max_r": 0.056
+    },
+    "QTc_Fridericia": {
+      "mean_r": -0.2302,
+      "std_r": 0.0224,
+      "min_r": -0.2617,
+      "max_r": -0.1958
+    },
+    "QTc_Framingham": {
+      "mean_r": -0.215,
+      "std_r": 0.0233,
+      "min_r": -0.2476,
+      "max_r": -0.1781
+    },
+    "QTc_Hodges": {
+      "mean_r": -0.0725,
+      "std_r": 0.0161,
+      "min_r": -0.1023,
+      "max_r": -0.0561
+    },
+    "QTc_Kepler_Linear": {
+      "mean_r": -0.1157,
+      "std_r": 0.0234,
+      "min_r": -0.1477,
+      "max_r": -0.0789
+    },
+    "QTc_Kepler_Cubic": {
+      "mean_r": -0.0657,
+      "std_r": 0.0208,
+      "min_r": -0.0968,
+      "max_r": -0.0353
+    },
+    "QTc_Kepler_Factor": {
+      "mean_r": -0.0222,
+      "std_r": 0.019,
+      "min_r": -0.0506,
+      "max_r": 0.0039
+    }
+  },
+  "clinical_thresholds": {
+    "QTc_Bazett": {
+      "n_total": 6450,
+      "mean_qtc": 401.12,
+      "std_qtc": 52.03,
+      "prolonged_450ms": {
+        "n": 877,
+        "pct": 13.6
+      },
+      "prolonged_460ms": {
+        "n": 593,
+        "pct": 9.19
+      },
+      "high_risk_500ms": {
+        "n": 126,
+        "pct": 1.95
+      },
+      "short_340ms": {
+        "n": 713,
+        "pct": 11.05
+      }
+    },
+    "QTc_Fridericia": {
+      "n_total": 6450,
+      "mean_qtc": 384.6,
+      "std_qtc": 51.08,
+      "prolonged_450ms": {
+        "n": 430,
+        "pct": 6.67
+      },
+      "prolonged_460ms": {
+        "n": 313,
+        "pct": 4.85
+      },
+      "high_risk_500ms": {
+        "n": 52,
+        "pct": 0.81
+      },
+      "short_340ms": {
+        "n": 986,
+        "pct": 15.29
+      }
+    },
+    "QTc_Framingham": {
+      "n_total": 6450,
+      "mean_qtc": 386.85,
+      "std_qtc": 47.31,
+      "prolonged_450ms": {
+        "n": 404,
+        "pct": 6.26
+      },
+      "prolonged_460ms": {
+        "n": 265,
+        "pct": 4.11
+      },
+      "high_risk_500ms": {
+        "n": 45,
+        "pct": 0.7
+      },
+      "short_340ms": {
+        "n": 892,
+        "pct": 13.83
+      }
+    },
+    "QTc_Hodges": {
+      "n_total": 6450,
+      "mean_qtc": 388.49,
+      "std_qtc": 46.28,
+      "prolonged_450ms": {
+        "n": 400,
+        "pct": 6.2
+      },
+      "prolonged_460ms": {
+        "n": 269,
+        "pct": 4.17
+      },
+      "high_risk_500ms": {
+        "n": 41,
+        "pct": 0.64
+      },
+      "short_340ms": {
+        "n": 756,
+        "pct": 11.72
+      }
+    },
+    "QTc_Kepler_Linear": {
+      "n_total": 6450,
+      "mean_qtc": 365.38,
+      "std_qtc": 46.67,
+      "prolonged_450ms": {
+        "n": 147,
+        "pct": 2.28
+      },
+      "prolonged_460ms": {
+        "n": 90,
+        "pct": 1.4
+      },
+      "high_risk_500ms": {
+        "n": 18,
+        "pct": 0.28
+      },
+      "short_340ms": {
+        "n": 1401,
+        "pct": 21.72
+      }
+    },
+    "QTc_Kepler_Cubic": {
+      "n_total": 6450,
+      "mean_qtc": 365.74,
+      "std_qtc": 46.24,
+      "prolonged_450ms": {
+        "n": 147,
+        "pct": 2.28
+      },
+      "prolonged_460ms": {
+        "n": 89,
+        "pct": 1.38
+      },
+      "high_risk_500ms": {
+        "n": 18,
+        "pct": 0.28
+      },
+      "short_340ms": {
+        "n": 1364,
+        "pct": 21.15
+      }
+    },
+    "QTc_Kepler_Factor": {
+      "n_total": 6450,
+      "mean_qtc": 366.21,
+      "std_qtc": 47.25,
+      "prolonged_450ms": {
+        "n": 162,
+        "pct": 2.51
+      },
+      "prolonged_460ms": {
+        "n": 107,
+        "pct": 1.66
+      },
+      "high_risk_500ms": {
+        "n": 13,
+        "pct": 0.2
+      },
+      "short_340ms": {
+        "n": 1370,
+        "pct": 21.24
+      }
+    }
+  },
+  "ranking": [
+    {
+      "rank": 1,
+      "formula": "QTc_Kepler_Factor",
+      "abs_r": 0.0218
+    },
+    {
+      "rank": 2,
+      "formula": "QTc_Bazett",
+      "abs_r": 0.0263
+    },
+    {
+      "rank": 3,
+      "formula": "QTc_Kepler_Cubic",
+      "abs_r": 0.0653
+    },
+    {
+      "rank": 4,
+      "formula": "QTc_Hodges",
+      "abs_r": 0.0722
+    },
+    {
+      "rank": 5,
+      "formula": "QTc_Kepler_Linear",
+      "abs_r": 0.1152
+    },
+    {
+      "rank": 6,
+      "formula": "QTc_Framingham",
+      "abs_r": 0.2146
+    },
+    {
+      "rank": 7,
+      "formula": "QTc_Fridericia",
+      "abs_r": 0.2299
+    }
+  ]
+}

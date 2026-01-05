@@ -1,0 +1,80 @@
+{
+  "task": "SR Classification: NORM vs MI",
+  "timestamp": "2026-01-04T08:51:34.061623",
+  "dataset": {
+    "n_samples": 15936,
+    "n_train": 1862,
+    "n_test": 466,
+    "n_features": 36,
+    "features": [
+      "age",
+      "sex",
+      "quality_score",
+      "snr_db",
+      "heart_rate_bpm",
+      "n_beats",
+      "wav_wavelet_energy_approx",
+      "wav_wavelet_energy_d1",
+      "wav_wavelet_energy_d2",
+      "wav_wavelet_energy_d3",
+      "wav_wavelet_energy_d4",
+      "wav_wavelet_energy_d5",
+      "wav_wavelet_energy_d6",
+      "wav_wavelet_total_energy",
+      "wav_wavelet_energy_entropy",
+      "wav_wavelet_energy_concentration",
+      "wav_wavelet_coef_mean_abs",
+      "wav_wavelet_coef_std",
+      "wav_wavelet_coef_skewness",
+      "wav_wavelet_coef_kurtosis"
+    ]
+  },
+  "baseline": {
+    "threshold": 0.5,
+    "auc": 0.8959273517655509,
+    "accuracy": 0.8283261802575107,
+    "sensitivity": 0.7939914163090128,
+    "specificity": 0.8626609442060086,
+    "precision": 0.8525345622119815,
+    "f1": 0.8222222222222222,
+    "tp": 185,
+    "tn": 201,
+    "fp": 32,
+    "fn": 48
+  },
+  "best_equation": {
+    "formula": "((heart_rate_bpm + age) * 0.17508738) + 0.50000066",
+    "complexity": 7,
+    "threshold": 0.5059233912883457,
+    "auc": 0.8199358986166627,
+    "accuracy": 0.7618025751072961,
+    "sensitivity": 0.6652360515021459,
+    "specificity": 0.8583690987124464,
+    "f1": 0.7363420427553444
+  },
+  "config": {
+    "niterations": 150,
+    "populations": 40,
+    "population_size": 50,
+    "maxsize": 20,
+    "parsimony": 0.005,
+    "binary_operators": [
+      "+",
+      "-",
+      "*",
+      "/"
+    ],
+    "unary_operators": [
+      "square",
+      "sqrt",
+      "abs",
+      "log"
+    ],
+    "test_size": 0.2,
+    "cv_folds": 5,
+    "random_state": 42
+  },
+  "output_files": [
+    "results\\chapman\\sr_classification\\sr_classification_mi_equations.csv"
+  ]
+}

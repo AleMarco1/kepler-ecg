@@ -1,0 +1,7 @@
+ecg_id,error
+A1002,Too few R-peaks
+A1455,Too few R-peaks
+A4062,cannot convert float NaN to integer
+A5545,Too few R-peaks
+A5897,cannot convert float NaN to integer
+A6312,Too few R-peaks

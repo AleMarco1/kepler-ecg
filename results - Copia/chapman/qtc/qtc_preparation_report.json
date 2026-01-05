@@ -1,0 +1,27 @@
+{
+  "timestamp": "2026-01-04T13:48:34.471490",
+  "input_file": "results\\chapman\\waves\\wave_features.csv",
+  "output_dir": "results\\chapman\\qtc",
+  "filter_statistics": {
+    "initial": 45022,
+    "after_qt_valid": 43764,
+    "after_qt_range": 43731,
+    "after_rr_range": 42747,
+    "after_hr_range": 42747,
+    "after_quality": 42621,
+    "after_t_detection": 41325,
+    "final": 41325,
+    "retention_rate": 91.79
+  },
+  "dataset_sizes": {
+    "filtered": 41325,
+    "norm": 41325,
+    "sr_all": 41325,
+    "sr_norm": 41325
+  },
+  "qtc_hr_correlations": {
+    "QTc_Bazett_ms": 0.0486,
+    "QTc_Fridericia_ms": -0.3106,
+    "QTc_reference_ms": -0.0019
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "timestamp": "2026-01-04T14:56:28.577302",
+  "input_file": "results\\cpsc-2018\\qtc\\qtc_sr_dataset_all.csv",
+  "config": {
+    "niterations": 150,
+    "populations": 30,
+    "population_size": 40,
+    "maxsize": 15,
+    "parsimony": 0.004,
+    "binary_operators": [
+      "+",
+      "-",
+      "*",
+      "/"
+    ],
+    "unary_operators": [
+      "sqrt",
+      "cbrt",
+      "inv",
+      "square"
+    ],
+    "test_size": 0.2,
+    "random_state": 42
+  },
+  "feature_set": "minimal",
+  "features": [
+    "QT_interval_ms",
+    "RR_interval_sec"
+  ],
+  "train_size": 5160,
+  "test_size": 1290,
+  "best_overall": {
+    "abs_r_hr": Infinity,
+    "approach": null
+  },
+  "approaches": {}
+}

@@ -552,7 +552,7 @@ class SymbolicRegressionPrep:
         os.makedirs(output_dir, exist_ok=True)
         
         if pathologies is None:
-            pathologies = ["MI", "HYP", "CD", "STTC"]
+            pathologies = ["MI", "HYP", "CD", "STTC", "OTHER"]
         
         datasets = {}
         

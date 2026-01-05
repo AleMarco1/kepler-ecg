@@ -1,0 +1,80 @@
+{
+  "task": "SR Classification: NORM vs STTC",
+  "timestamp": "2026-01-04T09:42:36.844692",
+  "dataset": {
+    "n_samples": 1138,
+    "n_train": 310,
+    "n_test": 78,
+    "n_features": 47,
+    "features": [
+      "age",
+      "sex",
+      "quality_score",
+      "snr_db",
+      "heart_rate_bpm",
+      "heart_rate_std",
+      "n_beats",
+      "rr_mean_ms",
+      "rr_std_ms",
+      "rmssd",
+      "wav_wavelet_energy_approx",
+      "wav_wavelet_energy_d1",
+      "wav_wavelet_energy_d2",
+      "wav_wavelet_energy_d3",
+      "wav_wavelet_energy_d4",
+      "wav_wavelet_energy_d5",
+      "wav_wavelet_energy_d6",
+      "wav_wavelet_total_energy",
+      "wav_wavelet_energy_entropy",
+      "wav_wavelet_energy_concentration"
+    ]
+  },
+  "baseline": {
+    "threshold": 0.5,
+    "auc": 0.8902038132807363,
+    "accuracy": 0.8205128205128205,
+    "sensitivity": 0.7948717948717948,
+    "specificity": 0.8461538461538461,
+    "precision": 0.8378378378378378,
+    "f1": 0.8157894736842105,
+    "tp": 31,
+    "tn": 33,
+    "fp": 6,
+    "fn": 8
+  },
+  "best_equation": {
+    "formula": "0.19590086 * (comp_sig_hjorth_complexity + (2.552577 - sex))",
+    "complexity": 7,
+    "threshold": 0.5443764664706612,
+    "auc": 0.8165680473372782,
+    "accuracy": 0.782051282051282,
+    "sensitivity": 0.7692307692307693,
+    "specificity": 0.7948717948717948,
+    "f1": 0.7792207792207793
+  },
+  "config": {
+    "niterations": 150,
+    "populations": 40,
+    "population_size": 50,
+    "maxsize": 20,
+    "parsimony": 0.005,
+    "binary_operators": [
+      "+",
+      "-",
+      "*",
+      "/"
+    ],
+    "unary_operators": [
+      "square",
+      "sqrt",
+      "abs",
+      "log"
+    ],
+    "test_size": 0.2,
+    "cv_folds": 5,
+    "random_state": 42
+  },
+  "output_files": [
+    "results\\cpsc-2018\\sr_classification\\sr_classification_sttc_equations.csv"
+  ]
+}

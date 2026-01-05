@@ -1,0 +1,41 @@
+{
+  "processing_stats": {
+    "total_records": 45133,
+    "successful": 45022,
+    "failed": 111,
+    "success_rate_pct": 99.75
+  },
+  "interval_statistics": {
+    "QT_interval_ms": {
+      "mean": 353.25,
+      "std": 70.55,
+      "median": 362.0
+    },
+    "RR_interval_ms": {
+      "mean": 829.26,
+      "std": 258.21,
+      "median": 840.0
+    },
+    "heart_rate_bpm": {
+      "mean": 81.19,
+      "std": 30.14,
+      "median": 71.43
+    },
+    "QTc_Bazett_ms": {
+      "mean": 390.63,
+      "std": 51.8,
+      "median": 394.38
+    },
+    "QTc_Fridericia_ms": {
+      "mean": 376.68,
+      "std": 52.91,
+      "median": 383.26
+    }
+  },
+  "timestamp": "2026-01-04T13:24:14.668365",
+  "parameters": {
+    "dataset": "chapman",
+    "sampling_rate": 500,
+    "lead_index": 0
+  }
+}

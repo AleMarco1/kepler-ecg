@@ -1,20 +1,26 @@
 """
-Kepler-ECG: Process ECG Dataset
+Kepler-ECG: Process ECG Dataset (v2.0 - Multi-Dataset Support)
 
-Generic script that auto-detects dataset structure and processes ECG files.
+Generic script that processes ECG files with integrated dataset registry and label schema.
 Uses the existing PreprocessingPipeline from the project.
 
-Works with PTB-XL, Chapman, Georgia, CPSC, MIT-BIH, LTAF, QTDB, etc.
+Supports: PTB-XL, Chapman, CPSC-2018, Georgia (and more via registry).
 
 Supports diagnosis codes from:
 - CSV metadata files (PTB-XL style with scp_codes)
 - WFDB header comments with SNOMED-CT codes (Chapman, PhysioNet Challenge 2020/2021)
 
 Usage:
-    python process_dataset.py --data_dir ./data/raw/my-dataset --output_dir ./results/my-dataset
+    # New mode (recommended) - by dataset name:
+    python scripts/process_dataset.py --dataset ptb-xl
+    python scripts/process_dataset.py --dataset chapman
+    python scripts/process_dataset.py --dataset cpsc-2018 --n_samples 100
+    
+    # Legacy mode - by paths:
+    python scripts/process_dataset.py --data_dir ./data/raw/ptb-xl --output_dir ./results/ptb-xl
 
     # With specific sampling rate filter (e.g., only 500Hz files):
-    python process_dataset.py --data_dir ./data/raw/ptb-xl --output_dir ./results/ptb-xl --sampling_rate 500
+    python scripts/process_dataset.py --dataset ptb-xl --sampling_rate 500
 
 Supported formats:
     - WFDB (.dat + .hea or .mat + .hea)
@@ -22,28 +28,26 @@ Supported formats:
     - NumPy (.npy)
 
 Author: Alessandro Marconi for Kepler-ECG Project
-Version: 1.1.0 - Added SNOMED-CT support from WFDB headers
-Issued on: December 2025
+Version: 2.0.0 - Integrated with DatasetRegistry and LabelSchema
+Issued on: January 2025
 """
 
-# Standard library imports for system and workflow management
-import argparse  # Parse command-line arguments for configurable scripts
-import json      # Read and write configuration files or export metadata
-import logging   # Log info/warnings/errors to console or file instead of using print()
-import os        # Interface with the operating system (e.g., environment variables)
-import re        # Regular expressions for parsing header files
-import sys       # Access system-specific parameters and interpreter functions
-import time      # Track execution time or handle timestamping for logs
+# Standard library imports
+import argparse
+import json
+import logging
+import os
+import re
+import sys
+import time
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple, Generator, Any
+from dataclasses import dataclass, field
+from collections import defaultdict
 
-# Filesystem and data structure management
-from pathlib import Path       # Modern, cross-platform path handling (replaces os.path)
-from typing import Dict, List, Optional, Tuple, Generator, Any  # Type hints for better IDE support and debugging
-from dataclasses import dataclass, field  # Cleanly define data objects (e.g., PatientData, ModelConfig)
-from collections import defaultdict       # Dictionary that provides default values for missing keys
-
-# Data analysis and numerical computing
-import numpy as np  # High-performance array and matrix operations
-import pandas as pd  # Structured data manipulation (DataFrames) for metadata and CSVs
+# Data analysis
+import numpy as np
+import pandas as pd
 
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent / 'src'))
@@ -55,6 +59,27 @@ from preprocessing import (
     ProcessedECG,
 )
 
+# Import core modules
+try:
+    from core.dataset_registry import (
+        get_registry,
+        get_dataset_config,
+        detect_dataset_from_path,
+        DatasetConfig,
+        LabelSource,
+    )
+    from core.label_schema import (
+        LabelMapper,
+        Superclass,
+        parse_header_labels,
+        SNOMED_CODE_MAPPING,
+    )
+    CORE_AVAILABLE = True
+except ImportError as e:
+    CORE_AVAILABLE = False
+    print(f"⚠️  Warning: core modules not fully available: {e}")
+    print("   Some features may be limited.")
+
 # Setup logging
 logging.basicConfig(
     level=logging.INFO,
@@ -64,12 +89,10 @@ logger = logging.getLogger(__name__)
 
 
 # =============================================================================
-# SNOMED-CT CODE MAPPING
+# FALLBACK SNOMED-CT MAPPING (used if core module not available)
 # =============================================================================
 
-# Common SNOMED-CT codes used in PhysioNet ECG datasets
-# Reference: PhysioNet Challenge 2020/2021, Chapman dataset
-SNOMED_CT_MAPPING = {
+SNOMED_CT_MAPPING_FALLBACK = {
     # Normal
     '426783006': 'SR',       # Sinus rhythm
     '426177001': 'SB',       # Sinus bradycardia
@@ -84,10 +107,9 @@ SNOMED_CT_MAPPING = {
     '445211001': 'LPFB',     # Left posterior fascicular block
     '270492004': 'IAVB',     # First degree AV block
     '195042002': 'IIAVB',    # Second degree AV block
-    '27885002': 'IIIAVB',    # Third degree AV block (complete heart block)
+    '27885002': 'IIIAVB',    # Third degree AV block
     '54016002': 'IVCD',      # Intraventricular conduction delay
     '233917008': 'AVB',      # AV block
-    
     # Arrhythmias
     '284470004': 'PAC',      # Premature atrial contraction
     '427172004': 'PVC',      # Premature ventricular contraction
@@ -102,7 +124,6 @@ SNOMED_CT_MAPPING = {
     '251168009': 'SVT',      # Supraventricular tachycardia
     '251173003': 'AT',       # Atrial tachycardia
     '63593006': 'SVAPC',     # Supraventricular premature complex
-    
     # Hypertrophy
     '164873001': 'LVH',      # Left ventricular hypertrophy
     '89792004': 'RVH',       # Right ventricular hypertrophy
@@ -110,7 +131,6 @@ SNOMED_CT_MAPPING = {
     '67751000119106': 'RAE', # Right atrial enlargement
     '55827005': 'LAH',       # Left atrial hypertrophy
     '67741000119109': 'RAH', # Right atrial hypertrophy
-    
     # Ischemia/Infarction
     '164865005': 'MI',       # Myocardial infarction
     '164861001': 'AMI',      # Acute myocardial infarction
@@ -124,11 +144,9 @@ SNOMED_CT_MAPPING = {
     '251146004': 'STTC',     # ST-T change
     '428750005': 'NST',      # Nonspecific ST change
     '164934002': 'NSSTT',    # Nonspecific ST-T abnormality
-    
     # QT abnormalities
     '111975006': 'LQT',      # Long QT syndrome
     '77867006': 'SQT',       # Short QT syndrome
-    
     # Other
     '164917005': 'LQRS',     # Low QRS voltage
     '251120003': 'HQRS',     # High QRS voltage
@@ -139,18 +157,34 @@ SNOMED_CT_MAPPING = {
     '251200008': 'PAB',      # P wave abnormality
     '698252002': 'NORM',     # Normal ECG
     '164942001': 'ABQRS',    # Abnormal QRS
-    
-    # Additional codes from Chapman
-    '17366009': 'APB',       # Atrial premature beat (same as PAC)
+    '17366009': 'APB',       # Atrial premature beat
     '11157007': 'AVBL',      # AV block (low grade)
     '251164006': 'ERD',      # Early repolarization
 }
 
-# Reverse mapping for lookup
-SNOMED_CT_REVERSE = {v: k for k, v in SNOMED_CT_MAPPING.items()}
+
+def get_snomed_mapping() -> Dict[str, str]:
+    """Get SNOMED-CT mapping from core module or fallback."""
+    if CORE_AVAILABLE:
+        # Build mapping from core module
+        mapping = {}
+        for code, (superclass, subclass, desc) in SNOMED_CODE_MAPPING.items():
+            # Use a short code derived from description or subclass
+            if subclass:
+                short = subclass.value.split('_')[-1][:6].upper()
+            else:
+                short = superclass.value
+            mapping[code] = short
+        return mapping
+    else:
+        return SNOMED_CT_MAPPING_FALLBACK
 
 
-def parse_snomed_from_header(header_path: Path) -> Dict[str, Any]:
+# =============================================================================
+# HEADER PARSING
+# =============================================================================
+
+def parse_snomed_from_header(header_path: Path, label_mapper: Optional['LabelMapper'] = None) -> Dict[str, Any]:
     """
     Parse SNOMED-CT codes and demographics from WFDB header file.
     
@@ -163,6 +197,8 @@ def parse_snomed_from_header(header_path: Path) -> Dict[str, Any]:
     ----------
     header_path : Path
         Path to .hea file.
+    label_mapper : LabelMapper, optional
+        If provided, uses core label mapping for richer output.
         
     Returns
     -------
@@ -170,7 +206,10 @@ def parse_snomed_from_header(header_path: Path) -> Dict[str, Any]:
         - age: float or None
         - sex: int (0=Male, 1=Female) or None
         - snomed_codes: List[str] of SNOMED-CT codes
-        - scp_codes: Dict mapping abbreviation to 100.0 (for compatibility with PTB-XL format)
+        - scp_codes: Dict mapping abbreviation to 100.0 (for compatibility)
+        - labels: List[DiagnosticLabel] if label_mapper provided
+        - primary_superclass: str if label_mapper provided
+        - superclass_vector: Dict if label_mapper provided
     """
     metadata = {
         'age': None,
@@ -182,6 +221,8 @@ def parse_snomed_from_header(header_path: Path) -> Dict[str, Any]:
     if not header_path.exists():
         return metadata
     
+    snomed_mapping = get_snomed_mapping()
+    
     try:
         with open(header_path, 'r') as f:
             content = f.read()
@@ -191,15 +232,12 @@ def parse_snomed_from_header(header_path: Path) -> Dict[str, Any]:
         for line in lines:
             line = line.strip()
             
-            # Skip non-comment lines
             if not line.startswith('#'):
                 continue
             
-            # Remove the # prefix
             line = line[1:].strip()
             
             # Parse Age
-            # Formats: "Age: 45", "Age:45", "Age 45"
             age_match = re.match(r'Age[:\s]+(\d+)', line, re.IGNORECASE)
             if age_match:
                 try:
@@ -208,7 +246,6 @@ def parse_snomed_from_header(header_path: Path) -> Dict[str, Any]:
                     pass
             
             # Parse Sex
-            # Formats: "Sex: Male", "Sex:Female", "Sex: M", "Sex: F"
             sex_match = re.match(r'Sex[:\s]+(\w+)', line, re.IGNORECASE)
             if sex_match:
                 sex_str = sex_match.group(1).lower()
@@ -218,23 +255,27 @@ def parse_snomed_from_header(header_path: Path) -> Dict[str, Any]:
                     metadata['sex'] = 1
             
             # Parse Diagnosis codes
-            # Formats: "Dx: 426783006,427084000", "Dx:426783006"
             dx_match = re.match(r'Dx[:\s]+(.+)', line, re.IGNORECASE)
             if dx_match:
                 dx_string = dx_match.group(1)
-                # Split by comma, space, or both
                 codes = re.split(r'[,\s]+', dx_string)
                 codes = [c.strip() for c in codes if c.strip().isdigit()]
                 metadata['snomed_codes'] = codes
                 
                 # Convert to scp_codes format for compatibility
                 for code in codes:
-                    if code in SNOMED_CT_MAPPING:
-                        abbrev = SNOMED_CT_MAPPING[code]
+                    if code in snomed_mapping:
+                        abbrev = snomed_mapping[code]
                         metadata['scp_codes'][abbrev] = 100.0
                     else:
-                        # Keep unknown codes with their SNOMED ID
                         metadata['scp_codes'][f'SNOMED_{code}'] = 100.0
+                
+                # Use label mapper for richer output if available
+                if label_mapper and CORE_AVAILABLE:
+                    labels = label_mapper.map_snomed_codes(codes)
+                    metadata['labels'] = labels
+                    metadata['primary_superclass'] = label_mapper.get_primary_superclass(labels).value
+                    metadata['superclass_vector'] = label_mapper.get_superclass_vector(labels)
         
     except Exception as e:
         logger.debug(f"Could not parse header {header_path}: {e}")
@@ -243,27 +284,30 @@ def parse_snomed_from_header(header_path: Path) -> Dict[str, Any]:
 
 
 # =============================================================================
-# DATASET STRUCTURE DETECTOR
+# DATASET INFO & DETECTION
 # =============================================================================
 
 @dataclass
 class DatasetInfo:
     """Information about detected dataset structure."""
     data_dir: Path
-    name: str  # Dataset name (from directory name)
+    name: str
     format: str  # 'wfdb', 'mat', 'npy'
     record_paths: List[Path] = field(default_factory=list)
     metadata_path: Optional[Path] = None
     sampling_rate: Optional[int] = None
     n_records: int = 0
     structure: Dict = field(default_factory=dict)
-    has_snomed_headers: bool = False  # True if headers contain SNOMED-CT codes
+    has_snomed_headers: bool = False
+    # New fields from registry
+    registry_config: Optional[DatasetConfig] = None
+    label_source: Optional[LabelSource] = None
+    n_leads: int = 12
 
 
 class DatasetDetector:
     """Auto-detect dataset structure and file locations."""
     
-    # Known metadata filenames
     METADATA_FILES = [
         'ptbxl_database.csv',
         'RECORDS',
@@ -274,7 +318,12 @@ class DatasetDetector:
         'ConditionNames_SNOMED-CT.csv',
     ]
     
-    def __init__(self, data_dir: str, target_sampling_rate: Optional[int] = None):
+    def __init__(
+        self, 
+        data_dir: str, 
+        target_sampling_rate: Optional[int] = None,
+        dataset_name: Optional[str] = None
+    ):
         """
         Parameters
         ----------
@@ -282,33 +331,64 @@ class DatasetDetector:
             Path to dataset directory.
         target_sampling_rate : int, optional
             If specified, only include records at this sampling rate.
-            Useful for PTB-XL to exclude 100Hz files when you want only 500Hz.
+        dataset_name : str, optional
+            If specified, use registry config for this dataset.
         """
         self.data_dir = Path(data_dir)
         self.target_sampling_rate = target_sampling_rate
+        self.dataset_name = dataset_name
+        self.registry_config = None
         
         if not self.data_dir.exists():
             raise FileNotFoundError(f"Directory not found: {self.data_dir}")
+        
+        # Try to get registry config
+        if CORE_AVAILABLE:
+            if dataset_name:
+                try:
+                    self.registry_config = get_dataset_config(dataset_name)
+                    logger.info(f"Using registry config for: {dataset_name}")
+                except ValueError:
+                    logger.warning(f"Dataset '{dataset_name}' not in registry, using auto-detect")
+            else:
+                # Try to auto-detect from path
+                detected = detect_dataset_from_path(self.data_dir)
+                if detected:
+                    try:
+                        self.registry_config = get_dataset_config(detected)
+                        logger.info(f"Auto-detected dataset: {detected}")
+                    except ValueError:
+                        pass
     
     def detect(self) -> DatasetInfo:
         """Detect dataset structure."""
         logger.info(f"Scanning directory: {self.data_dir}")
         
-        # Dataset name from directory
-        dataset_name = self.data_dir.name
+        # Dataset name from registry or directory
+        if self.registry_config:
+            dataset_name = self.registry_config.name
+        else:
+            dataset_name = self.dataset_name or self.data_dir.name
         
         info = DatasetInfo(
             data_dir=self.data_dir, 
             name=dataset_name,
-            format='unknown'
+            format='unknown',
+            registry_config=self.registry_config,
         )
+        
+        # Use registry config if available
+        if self.registry_config:
+            info.label_source = self.registry_config.label_source
+            info.n_leads = self.registry_config.n_leads
+            if self.target_sampling_rate is None:
+                self.target_sampling_rate = self.registry_config.sampling_rate
         
         # Count files by extension
         extension_counts = defaultdict(int)
         all_files = []
         
         for root, dirs, files in os.walk(self.data_dir):
-            # Skip hidden directories
             dirs[:] = [d for d in dirs if not d.startswith('.')]
             
             for f in files:
@@ -323,23 +403,28 @@ class DatasetDetector:
         info.format = self._detect_format(extension_counts)
         logger.info(f"Detected format: {info.format}")
         
-        # Find record files (with sampling rate filtering)
+        # Find record files
         info.record_paths = self._find_records(all_files, info.format)
         info.n_records = len(info.record_paths)
         logger.info(f"Found {info.n_records} ECG records")
         
-        # Find metadata file (optional)
+        # Find metadata file
         info.metadata_path = self._find_metadata(all_files)
         if info.metadata_path:
             logger.info(f"Found metadata: {info.metadata_path.name}")
         
-        # Check if headers contain SNOMED-CT codes (Chapman/PhysioNet Challenge style)
+        # Check for SNOMED headers
         if info.format == 'wfdb' and info.n_records > 0:
-            info.has_snomed_headers = self._check_snomed_headers(info.record_paths[:5])
-            if info.has_snomed_headers:
-                logger.info("Detected SNOMED-CT codes in WFDB headers")
+            # Use registry hint or auto-detect
+            if self.registry_config and self.registry_config.label_source in [LabelSource.SNOMED, LabelSource.CHALLENGE_LABELS]:
+                info.has_snomed_headers = True
+                logger.info("Dataset uses SNOMED-CT codes (from registry)")
+            else:
+                info.has_snomed_headers = self._check_snomed_headers(info.record_paths[:5])
+                if info.has_snomed_headers:
+                    logger.info("Detected SNOMED-CT codes in WFDB headers")
         
-        # Detect/confirm sampling rate from first record
+        # Detect sampling rate
         if info.n_records > 0:
             detected_fs = self._detect_sampling_rate(info.record_paths[0], info.format)
             info.sampling_rate = self.target_sampling_rate or detected_fs
@@ -349,10 +434,12 @@ class DatasetDetector:
         info.structure = {
             'format': info.format,
             'n_records': info.n_records,
+            'n_leads': info.n_leads,
             'has_metadata': info.metadata_path is not None,
             'has_snomed_headers': info.has_snomed_headers,
             'sampling_rate': info.sampling_rate,
             'extensions': dict(extension_counts),
+            'from_registry': self.registry_config is not None,
         }
         
         return info
@@ -362,7 +449,6 @@ class DatasetDetector:
         if extension_counts.get('.dat', 0) > 0 and extension_counts.get('.hea', 0) > 0:
             return 'wfdb'
         elif extension_counts.get('.mat', 0) > 0 and extension_counts.get('.hea', 0) > 0:
-            # Chapman uses .mat + .hea (MATLAB v4 format with WFDB header)
             return 'wfdb'
         elif extension_counts.get('.mat', 0) > 0:
             return 'mat'
@@ -372,27 +458,40 @@ class DatasetDetector:
             return 'unknown'
     
     def _find_records(self, all_files: List[Path], format: str) -> List[Path]:
-        """Find all ECG record files, optionally filtering by sampling rate."""
+        """Find all ECG record files."""
         records = []
         
         if format == 'wfdb':
-            # For WFDB, we need .hea files (header)
+            # Build a set of all file stems for fast lookup
+            # This handles case-insensitivity and various naming conventions
+            file_stems_by_dir = defaultdict(set)
+            files_by_stem = {}
+            
+            for f in all_files:
+                stem_lower = f.stem.lower()
+                dir_path = f.parent
+                file_stems_by_dir[dir_path].add(stem_lower)
+                files_by_stem[(dir_path, stem_lower, f.suffix.lower())] = f
+            
+            # Find all .hea files that have a corresponding .dat or .mat
             for f in all_files:
                 if f.suffix.lower() == '.hea':
-                    # Data can be in .dat or .mat file
-                    dat_file = f.with_suffix('.dat')
-                    mat_file = f.with_suffix('.mat')
+                    dir_path = f.parent
+                    stem_lower = f.stem.lower()
                     
-                    if dat_file.exists() or mat_file.exists():
-                        record_path = f.with_suffix('')  # Path without extension
+                    # Check if .dat or .mat exists (case-insensitive)
+                    has_dat = (dir_path, stem_lower, '.dat') in files_by_stem
+                    has_mat = (dir_path, stem_lower, '.mat') in files_by_stem
+                    
+                    if has_dat or has_mat:
+                        record_path = f.with_suffix('')
                         
-                        # Filter by sampling rate if specified
                         if self.target_sampling_rate is not None:
                             try:
                                 import wfdb
                                 header = wfdb.rdheader(str(record_path))
                                 if header.fs != self.target_sampling_rate:
-                                    continue  # Skip this record
+                                    continue
                             except Exception:
                                 continue
                         
@@ -408,6 +507,13 @@ class DatasetDetector:
     
     def _find_metadata(self, all_files: List[Path]) -> Optional[Path]:
         """Find metadata file if exists."""
+        # First check registry config
+        if self.registry_config and self.registry_config.metadata_file:
+            for f in all_files:
+                if f.name == self.registry_config.metadata_file:
+                    return f
+        
+        # Fallback to known names
         for f in all_files:
             if f.name in self.METADATA_FILES:
                 return f
@@ -423,7 +529,6 @@ class DatasetDetector:
                 try:
                     with open(header_path, 'r') as f:
                         content = f.read()
-                    # Look for Dx: followed by numeric codes
                     if re.search(r'#\s*Dx[:\s]+\d+', content, re.IGNORECASE):
                         return True
                 except Exception:
@@ -437,7 +542,6 @@ class DatasetDetector:
                 import wfdb
                 record = wfdb.rdheader(str(record_path))
                 return record.fs
-            
             elif format == 'mat':
                 import scipy.io as sio
                 mat = sio.loadmat(str(record_path))
@@ -447,11 +551,9 @@ class DatasetDetector:
                         if hasattr(val, 'item'):
                             return int(val.item())
                         return int(val.flatten()[0])
-                return 500  # Default
-            
+                return 500
             else:
                 return None
-                
         except Exception as e:
             logger.warning(f"Could not detect sampling rate: {e}")
             return None
@@ -467,6 +569,11 @@ class GenericECGLoader:
     def __init__(self, dataset_info: DatasetInfo):
         self.info = dataset_info
         self.metadata = self._load_metadata()
+        
+        # Initialize label mapper if core is available
+        self.label_mapper = None
+        if CORE_AVAILABLE:
+            self.label_mapper = LabelMapper(dataset_info.name)
     
     def _load_metadata(self) -> Optional[pd.DataFrame]:
         """Load metadata CSV if available."""
@@ -474,7 +581,6 @@ class GenericECGLoader:
             return None
         
         try:
-            # Try to auto-detect index column
             df = pd.read_csv(self.info.metadata_path)
             
             # Common index columns
@@ -490,14 +596,7 @@ class GenericECGLoader:
             return None
     
     def load_record(self, record_path: Path) -> Tuple[np.ndarray, int, Dict]:
-        """
-        Load a single ECG record.
-        
-        Returns:
-            signal: np.ndarray (n_samples, n_leads) or (n_samples,)
-            fs: sampling rate
-            metadata: dict with any available info
-        """
+        """Load a single ECG record."""
         if self.info.format == 'wfdb':
             return self._load_wfdb(record_path)
         elif self.info.format == 'mat':
@@ -508,10 +607,10 @@ class GenericECGLoader:
             raise ValueError(f"Unsupported format: {self.info.format}")
     
     def _load_wfdb(self, record_path: Path) -> Tuple[np.ndarray, int, Dict]:
-        """Load WFDB format (supports both .dat and .mat data files)."""
+        """Load WFDB format."""
         import wfdb
         record = wfdb.rdrecord(str(record_path))
-        signal = record.p_signal  # (n_samples, n_leads)
+        signal = record.p_signal
         fs = record.fs
         
         metadata = {
@@ -523,10 +622,10 @@ class GenericECGLoader:
             'scp_codes': {},
         }
         
-        # First, try to get SNOMED-CT codes from header (Chapman/PhysioNet Challenge style)
+        # Get labels from header (SNOMED-CT)
         if self.info.has_snomed_headers:
             header_path = record_path.with_suffix('.hea')
-            header_metadata = parse_snomed_from_header(header_path)
+            header_metadata = parse_snomed_from_header(header_path, self.label_mapper)
             
             if header_metadata['age'] is not None:
                 metadata['age'] = header_metadata['age']
@@ -536,19 +635,22 @@ class GenericECGLoader:
                 metadata['scp_codes'] = header_metadata['scp_codes']
             if header_metadata['snomed_codes']:
                 metadata['snomed_codes'] = header_metadata['snomed_codes']
+            
+            # Add rich label info if available
+            if 'primary_superclass' in header_metadata:
+                metadata['primary_superclass'] = header_metadata['primary_superclass']
+            if 'superclass_vector' in header_metadata:
+                metadata['superclass_vector'] = header_metadata['superclass_vector']
         
-        # Then, try to get additional metadata from CSV if available (PTB-XL style)
+        # Get metadata from CSV (PTB-XL style)
         if self.metadata is not None:
             try:
-                # Try different ways to match record to metadata
                 record_id = record_path.name
                 matched_row = None
                 
-                # Method 1: Direct match with index
                 if record_id in self.metadata.index:
                     matched_row = self.metadata.loc[record_id]
                 
-                # Method 2: Try numeric ID (for PTB-XL style: "00001_hr" -> 1)
                 if matched_row is None:
                     try:
                         numeric_id = int(record_id.split('_')[0].lstrip('0') or '0')
@@ -557,17 +659,14 @@ class GenericECGLoader:
                     except (ValueError, AttributeError):
                         pass
                 
-                # Method 3: Try matching filename columns (PTB-XL has filename_hr, filename_lr)
                 if matched_row is None:
                     for fname_col in ['filename_hr', 'filename_lr', 'filename']:
                         if fname_col in self.metadata.columns:
-                            # Match partial path (e.g., "records500/00000/00001_hr")
                             mask = self.metadata[fname_col].astype(str).str.contains(record_id, regex=False)
                             if mask.any():
                                 matched_row = self.metadata.loc[mask].iloc[0]
                                 break
                 
-                # Extract metadata if we found a match (CSV overrides header values if present)
                 if matched_row is not None:
                     for col in ['age', 'sex', 'scp_codes', 'patient_id']:
                         if col in matched_row.index:
@@ -577,20 +676,25 @@ class GenericECGLoader:
                                     val = eval(val)
                                 except:
                                     pass
-                            # Only override if the new value is not None/empty
                             if val is not None and (not isinstance(val, dict) or val):
                                 metadata[col] = val
+                    
+                    # Map SCP codes using label mapper
+                    if self.label_mapper and metadata.get('scp_codes'):
+                        labels = self.label_mapper.map_scp_codes(metadata['scp_codes'])
+                        metadata['primary_superclass'] = self.label_mapper.get_primary_superclass(labels).value
+                        metadata['superclass_vector'] = self.label_mapper.get_superclass_vector(labels)
+                        
             except Exception:
                 pass
         
         return signal, int(fs), metadata
     
     def _load_mat(self, record_path: Path) -> Tuple[np.ndarray, int, Dict]:
-        """Load MAT format (standalone, not WFDB)."""
+        """Load MAT format."""
         import scipy.io as sio
         mat = sio.loadmat(str(record_path))
         
-        # Find signal array
         signal = None
         for key in ['val', 'ECG', 'ecg', 'signal', 'data', 'X']:
             if key in mat:
@@ -607,13 +711,11 @@ class GenericECGLoader:
         if signal is None:
             raise ValueError(f"Could not find signal in {record_path}")
         
-        # Ensure correct shape: (n_samples, n_leads)
         if signal.ndim == 1:
             signal = signal.reshape(-1, 1)
         elif signal.shape[0] < signal.shape[1]:
             signal = signal.T
         
-        # Get sampling rate
         fs = self.info.sampling_rate or 500
         for key in ['fs', 'Fs', 'sampling_rate']:
             if key in mat:
@@ -647,12 +749,7 @@ class GenericECGLoader:
         return signal, fs, metadata
     
     def iter_records(self, n_samples: Optional[int] = None) -> Generator:
-        """
-        Iterate over records.
-        
-        Yields:
-            record_path, signal, fs, metadata
-        """
+        """Iterate over records."""
         paths = self.info.record_paths[:n_samples] if n_samples else self.info.record_paths
         
         for record_path in paths:
@@ -682,6 +779,10 @@ def extract_features(result: ProcessedECG, metadata: Dict) -> Dict:
         'age': metadata.get('age'),
         'sex': metadata.get('sex'),
         'scp_codes': metadata.get('scp_codes', {}),
+        'snomed_codes': metadata.get('snomed_codes', []),
+        
+        # New: Unified label info
+        'primary_superclass': metadata.get('primary_superclass'),
         
         # Quality
         'quality_score': None,
@@ -698,76 +799,101 @@ def extract_features(result: ProcessedECG, metadata: Dict) -> Dict:
         'rr_mean_ms': None,
         'rr_std_ms': None,
         'rmssd': None,
-        'pnn50': None,
-        
-        # Detection confidence
-        'detection_confidence': None,
-        'ectopic_ratio': None,
     }
     
-    # Add SNOMED codes if present
-    if 'snomed_codes' in metadata:
-        features['snomed_codes'] = metadata['snomed_codes']
+    # Add superclass binary columns if available
+    superclass_vector = metadata.get('superclass_vector', {})
+    for sc in ['NORM', 'MI', 'STTC', 'CD', 'HYP', 'OTHER']:
+        features[f'label_{sc}'] = superclass_vector.get(sc, 0)
     
     # Quality metrics
-    if result.quality is not None:
+    if result.quality:
         features['quality_score'] = result.quality.quality_score
-        features['quality_level'] = result.quality.quality_level.value
+        features['quality_level'] = result.quality.quality_level.value if hasattr(result.quality.quality_level, 'value') else str(result.quality.quality_level)
         features['snr_db'] = result.quality.snr_db
     
-    # Segmentation metrics
-    if result.segmentation is not None:
-        features['heart_rate_std'] = result.segmentation.heart_rate_std
-        features['detection_confidence'] = result.segmentation.detection_confidence
-        
-        rr = result.segmentation.rr_intervals
-        if len(rr) > 1:
+    # HRV metrics
+    if result.hrv and hasattr(result.hrv, 'rr_clean'):
+        rr = result.hrv.rr_clean
+        if rr is not None and len(rr) > 1:
             features['rr_mean_ms'] = float(np.mean(rr))
             features['rr_std_ms'] = float(np.std(rr))
+            features['heart_rate_std'] = float(np.std(60000 / rr)) if np.all(rr > 0) else None
             
             # RMSSD
-            rr_diff = np.diff(rr)
-            features['rmssd'] = float(np.sqrt(np.mean(rr_diff ** 2)))
-            
-            # pNN50
-            features['pnn50'] = float(np.sum(np.abs(rr_diff) > 50) / len(rr_diff) * 100)
-    
-    # HRV metrics
-    if result.hrv is not None:
-        features['ectopic_ratio'] = result.hrv.ectopic_ratio
+            if len(rr) > 2:
+                diff = np.diff(rr)
+                features['rmssd'] = float(np.sqrt(np.mean(diff ** 2)))
     
     return features
+
+
+# =============================================================================
+# PROCESSING CONFIG
+# =============================================================================
+
+@dataclass
+class ProcessingConfig:
+    """Configuration for dataset processing."""
+    data_dir: Optional[str] = None
+    output_dir: Optional[str] = None
+    dataset_name: Optional[str] = None  # New: use registry
+    sampling_rate: Optional[int] = None
+    n_samples: Optional[int] = None
+    batch_size: int = 100
+    lead_idx: int = 0  # Which lead to use for single-lead analysis
 
 
 # =============================================================================
 # MAIN PROCESSING
 # =============================================================================
 
-@dataclass
-class ProcessingConfig:
-    """Configuration for processing."""
-    data_dir: str
-    output_dir: str
-    sampling_rate: Optional[int] = None  # None = auto-detect, or filter to this rate
-    n_samples: Optional[int] = None
-    batch_size: int = 100
-
-
-def process_dataset(config: ProcessingConfig):
-    """Process any ECG dataset using the project's preprocessing pipeline."""
+def process_dataset(config: ProcessingConfig) -> Tuple[Optional[pd.DataFrame], Optional[Dict]]:
+    """
+    Process an entire ECG dataset.
     
+    Returns
+    -------
+    df : pd.DataFrame
+        Features for all processed records
+    summary : dict
+        Processing summary statistics
+    """
     logger.info("=" * 70)
-    logger.info("KEPLER-ECG: Generic Dataset Processor v1.1")
+    logger.info("KEPLER-ECG DATASET PROCESSOR v2.0")
     logger.info("=" * 70)
+    
+    # Determine data directory
+    if config.dataset_name and CORE_AVAILABLE:
+        # Use registry to get default paths
+        try:
+            registry_config = get_dataset_config(config.dataset_name)
+            if config.data_dir is None:
+                config.data_dir = f"data/raw/{registry_config.name}"
+            if config.output_dir is None:
+                config.output_dir = f"results/{registry_config.name}"
+            logger.info(f"Using registry config for: {config.dataset_name}")
+        except ValueError as e:
+            logger.error(f"Dataset not found in registry: {e}")
+            return None, None
+    
+    if config.data_dir is None:
+        logger.error("No data directory specified. Use --data_dir or --dataset")
+        return None, None
     
     # Step 1: Detect dataset structure
     logger.info("\n[1/4] Detecting dataset structure...")
-    detector = DatasetDetector(config.data_dir, target_sampling_rate=config.sampling_rate)
+    
+    detector = DatasetDetector(
+        config.data_dir, 
+        config.sampling_rate,
+        config.dataset_name
+    )
     dataset_info = detector.detect()
     
     if dataset_info.n_records == 0:
         logger.error("No ECG records found!")
-        return None
+        return None, None
     
     dataset_name = dataset_info.name
     logger.info(f"Dataset: {dataset_name}")
@@ -793,6 +919,8 @@ def process_dataset(config: ProcessingConfig):
     
     if dataset_info.has_snomed_headers:
         logger.info("Using SNOMED-CT codes from WFDB headers")
+    if loader.label_mapper:
+        logger.info("Using unified label schema")
     
     # Step 3: Process records
     logger.info("\n[3/4] Processing ECG records...")
@@ -805,16 +933,10 @@ def process_dataset(config: ProcessingConfig):
     start_time = time.time()
     
     for i, (record_path, signal, fs, metadata) in enumerate(loader.iter_records(config.n_samples)):
-        # Use record name as ID
         ecg_id = record_path.stem
         
-        # Process with pipeline
         result = pipeline.process(signal, fs=fs, ecg_id=ecg_id)
-        
-        # Extract features
         features = extract_features(result, metadata)
-        
-        # Add record path for reference
         features['record_path'] = str(record_path.relative_to(dataset_info.data_dir))
         
         all_features.append(features)
@@ -822,7 +944,6 @@ def process_dataset(config: ProcessingConfig):
         if not result.success:
             failed_ids.append(ecg_id)
         
-        # Progress
         if (i + 1) % config.batch_size == 0:
             elapsed = time.time() - start_time
             rate = (i + 1) / elapsed
@@ -850,7 +971,14 @@ def process_dataset(config: ProcessingConfig):
         level = f['quality_level'] or 'unknown'
         quality_counts[level] = quality_counts.get(level, 0) + 1
     
-    # Diagnosis distribution (if available)
+    # Superclass distribution (new)
+    superclass_counts = defaultdict(int)
+    for f in all_features:
+        primary = f.get('primary_superclass')
+        if primary:
+            superclass_counts[primary] += 1
+    
+    # Legacy diagnosis distribution
     diagnosis_counts = defaultdict(int)
     for f in all_features:
         scp = f.get('scp_codes', {})
@@ -861,7 +989,6 @@ def process_dataset(config: ProcessingConfig):
     # Save CSV
     df = pd.DataFrame(all_features)
     
-    # Convert dict columns to JSON strings
     for col in ['scp_codes', 'snomed_codes']:
         if col in df.columns:
             df[col] = df[col].apply(lambda x: json.dumps(x) if isinstance(x, (dict, list)) else x)
@@ -882,7 +1009,9 @@ def process_dataset(config: ProcessingConfig):
         'dataset_dir': str(config.data_dir),
         'format': dataset_info.format,
         'sampling_rate': dataset_info.sampling_rate,
+        'n_leads': dataset_info.n_leads,
         'has_snomed_headers': dataset_info.has_snomed_headers,
+        'from_registry': dataset_info.registry_config is not None,
         'n_records_found': dataset_info.n_records,
         'n_processed': n_processed,
         'n_successful': n_successful,
@@ -893,6 +1022,7 @@ def process_dataset(config: ProcessingConfig):
         'total_time_sec': total_time,
         'throughput_ecg_per_sec': n_processed / total_time if total_time > 0 else 0,
         'quality_distribution': quality_counts,
+        'superclass_distribution': dict(superclass_counts),
         'diagnosis_distribution': dict(diagnosis_counts) if diagnosis_counts else {},
         'failed_ids': failed_ids[:100],
     }
@@ -908,7 +1038,9 @@ def process_dataset(config: ProcessingConfig):
     logger.info("=" * 70)
     logger.info(f"\nDataset:     {dataset_name}")
     logger.info(f"Format:      {dataset_info.format}")
-    logger.info(f"SNOMED-CT:   {'Yes (from headers)' if dataset_info.has_snomed_headers else 'No'}")
+    logger.info(f"Leads:       {dataset_info.n_leads}")
+    logger.info(f"Registry:    {'Yes' if dataset_info.registry_config else 'No (auto-detect)'}")
+    logger.info(f"SNOMED-CT:   {'Yes' if dataset_info.has_snomed_headers else 'No'}")
     logger.info(f"Processed:   {n_processed}")
     logger.info(f"Successful:  {n_successful} ({n_successful/n_processed*100:.1f}%)")
     logger.info(f"Usable:      {n_usable} ({n_usable/n_processed*100:.1f}%)")
@@ -924,6 +1056,13 @@ def process_dataset(config: ProcessingConfig):
         if count > 0:
             logger.info(f"  {level:12s}: {count:5d} ({count/n_processed*100:.1f}%)")
     
+    if superclass_counts:
+        logger.info(f"\nSuperclass distribution:")
+        for sc in ['NORM', 'MI', 'STTC', 'CD', 'HYP', 'OTHER']:
+            count = superclass_counts.get(sc, 0)
+            if count > 0:
+                logger.info(f"  {sc:12s}: {count:5d} ({count/n_processed*100:.1f}%)")
+    
     if diagnosis_counts:
         logger.info(f"\nTop 10 diagnoses:")
         sorted_diag = sorted(diagnosis_counts.items(), key=lambda x: x[1], reverse=True)[:10]
@@ -937,20 +1076,42 @@ def process_dataset(config: ProcessingConfig):
 
 def main():
     parser = argparse.ArgumentParser(
-        description='Process any ECG dataset with Kepler-ECG pipeline (v1.1 with SNOMED-CT support)'
+        description='Process ECG datasets with Kepler-ECG pipeline (v2.0 with registry support)',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  # New mode (recommended) - by dataset name:
+  python scripts/process_dataset.py --dataset ptb-xl
+  python scripts/process_dataset.py --dataset chapman --n_samples 100
+  
+  # Legacy mode - by paths:
+  python scripts/process_dataset.py --data_dir ./data/raw/ptb-xl --output_dir ./results/ptb-xl
+  
+  # With sampling rate filter:
+  python scripts/process_dataset.py --dataset ptb-xl --sampling_rate 500
+        """
     )
+    
+    # New: dataset by name
+    parser.add_argument(
+        '--dataset', '-d',
+        type=str,
+        help='Dataset name from registry (e.g., ptb-xl, chapman, cpsc-2018, georgia)'
+    )
+    
+    # Legacy: paths
     parser.add_argument(
         '--data_dir',
         type=str,
-        required=True,
         help='Path to dataset directory'
     )
     parser.add_argument(
         '--output_dir',
         type=str,
-        required=True,
         help='Path to save results'
     )
+    
+    # Options
     parser.add_argument(
         '--sampling_rate',
         type=int,
@@ -972,9 +1133,14 @@ def main():
     
     args = parser.parse_args()
     
+    # Validate arguments
+    if not args.dataset and not args.data_dir:
+        parser.error("Either --dataset or --data_dir is required")
+    
     config = ProcessingConfig(
         data_dir=args.data_dir,
         output_dir=args.output_dir,
+        dataset_name=args.dataset,
         sampling_rate=args.sampling_rate,
         n_samples=args.n_samples,
         batch_size=args.batch_size,

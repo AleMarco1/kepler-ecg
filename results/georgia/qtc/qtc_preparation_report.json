@@ -1,0 +1,27 @@
+{
+  "timestamp": "2026-01-04T13:48:36.903764",
+  "input_file": "results\\georgia\\waves\\wave_features.csv",
+  "output_dir": "results\\georgia\\qtc",
+  "filter_statistics": {
+    "initial": 10331,
+    "after_qt_valid": 10007,
+    "after_qt_range": 9988,
+    "after_rr_range": 9934,
+    "after_hr_range": 9934,
+    "after_quality": 9914,
+    "after_t_detection": 9418,
+    "final": 9418,
+    "retention_rate": 91.16
+  },
+  "dataset_sizes": {
+    "filtered": 9418,
+    "norm": 9418,
+    "sr_all": 9418,
+    "sr_norm": 9418
+  },
+  "qtc_hr_correlations": {
+    "QTc_Bazett_ms": -0.0021,
+    "QTc_Fridericia_ms": -0.2272,
+    "QTc_reference_ms": -0.0041
+  }
+}

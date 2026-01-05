@@ -1,0 +1,71 @@
+{
+  "task": "SR Cardiac Age Prediction",
+  "timestamp": "2026-01-04T11:18:57.674297",
+  "dataset": {
+    "n_samples": 6724,
+    "n_train": 4804,
+    "n_test": 1202,
+    "n_features": 45,
+    "age_range": {
+      "min": 18.0,
+      "max": 92.0,
+      "mean": 60.675990675990676
+    }
+  },
+  "baseline": {
+    "model": "LinearRegression",
+    "r2": 0.17498738538447056,
+    "mae": 13.13684996744499,
+    "rmse": 16.22200947426098,
+    "mse": 263.153591383013,
+    "mean_error": -0.3470852938001086,
+    "std_error": 16.218295939519685
+  },
+  "best_equation": {
+    "formula": "exp(2.058553 - wav_wavelet_coef_max) + 50.642025",
+    "complexity": 6,
+    "r2": 0.10046891781888978,
+    "mae": 13.815452373562767,
+    "rmse": 16.938792322778987
+  },
+  "cardiac_age_delta": {
+    "mean_delta": -0.009826074926521336,
+    "std_delta": 16.938789472760085,
+    "median_delta": -2.1912773305943176,
+    "pct_older": 45.09151414309484,
+    "pct_younger": 54.90848585690515,
+    "percentiles": {
+      "p10": -21.410965642586678,
+      "p25": -11.931864941840946,
+      "p50": -2.1912773305943176,
+      "p75": 11.32991450869515,
+      "p90": 26.381137758731374
+    },
+    "age_trend_slope": -0.902432712802932
+  },
+  "config": {
+    "niterations": 150,
+    "populations": 40,
+    "population_size": 50,
+    "maxsize": 25,
+    "parsimony": 0.003,
+    "binary_operators": [
+      "+",
+      "-",
+      "*",
+      "/"
+    ],
+    "unary_operators": [
+      "square",
+      "sqrt",
+      "abs",
+      "log",
+      "exp"
+    ],
+    "test_size": 0.2,
+    "cv_folds": 5,
+    "random_state": 42,
+    "min_age": 18,
+    "max_age": 100
+  }
+}
