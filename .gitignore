@@ -15,7 +15,27 @@
 # 4. Permetti solo uno script specifico nella cartella scripts
 !scripts/
 scripts/*
+!scripts/02_0_process_dataset.py
+!scripts/03_0_extract_waves.py
 !scripts/04_0_prepare_qtc_dataset.py
+!scripts/05_0_sr_qtc_discovery.py
+!scripts/06_0_sr_qtc_validation.py
+!scripts/07_0_sr_qtc_cross_validation.py
+!scripts/08_0_sr_qtc_pooled_discovery.py
+!scripts/09_0_clinical_reclassification_analysis.py
+!scripts/09_1_subpopulation_stratification.py
+!scripts/09_2_hr_extremes_analysis.py
+!scripts/09_3_diagnostic_concordance.py
+!scripts/09_4_nnt_nnh_analysis.py
+!scripts/11_0_cross_type_validation.py
+!scripts/11_1_sensitivity_analysis.py
+!scripts/11_2_demographic_bias_analysis.py
+!scripts/11_3_extreme_hr_analysis.py
+!scripts/11_4b_safety_audit_mimic.py
+!scripts/11_4_safety_audit.py
+!scripts/11_5_delineation_stress_test.py
+!scripts/11_6_clinical_usability.py
+
 
 # 5. Esclusioni standard (sempre utili)
 .venv/
