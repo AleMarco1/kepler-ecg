@@ -1,8 +1,0 @@
-Complexity,Loss,Equation
-1,1680.4756,"0.28409275"
-3,1582.3284,"7.4256887 / RR_interval_sec"
-5,19.460602,"(RR_interval_sec * -212.70294) + 174.00446"
-7,0.2784332,"-510.28235 + (1194.7452 / (RR_interval_sec - -1.5386165))"
-9,1.0261678e-10,"(RR_interval_sec * ((RR_interval_sec * 89.26871) + -364.88867)) + 235.4756"
-11,6.0285485e-11,"RR_interval_sec * ((RR_interval_sec * 89.26869) + ((235.47559 / RR_interval_sec) + -364.88864))"
-13,3.8366466e-11,"(RR_interval_sec * ((RR_interval_sec * 89.26871) + ((168.68655 / RR_interval_sec) + -364.88867))) - -66.78905"

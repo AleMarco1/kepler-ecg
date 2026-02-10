@@ -1,9 +1,0 @@
-Complexity,Loss,Equation
-1,0.24999996,"0.5002001"
-5,0.22285281,"0.5000824 - (quality_score * 0.16476458)"
-6,0.2226578,"abs(0.49727663 - (quality_score * 0.17312919))"
-8,0.2182292,"abs(sqrt(square(-0.4906773 - (wav_wavelet_qrs_peak * -0.20306683))))"
-9,0.20401642,"(rr_mean_ms * -0.13752136) - (-0.50008255 - (quality_score * -0.17468347))"
-11,0.19338107,"(((rr_mean_ms * -1.116089) - (quality_score + wav_wavelet_coef_std)) * 0.13198197) - -0.5000827"
-17,0.19335565,"((((rr_mean_ms * -1.1132573) - (quality_score + wav_wavelet_coef_std)) * 0.13212246) - ((heart_rate_bpm / comp_sig_compression_ratio_mean) * -5.7949648e-5)) - -0.5000088"
-18,0.19228302,"abs(((((rr_mean_ms * (-1.2833648 - -0.16762508)) - (quality_score + wav_wavelet_coef_std)) * 0.13196307) - (-0.4566663 * 1.3160343)) - 0.10094129)"

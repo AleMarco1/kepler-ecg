@@ -1,21 +1,23 @@
-# Ambiente virtuale
+# 1. Escludi tutto il contenuto della cartella
+/*
+
+# 2. Permetti i file indispensabili nella root
+!README.md
+!requirements.txt
+!.gitignore
+
+# 3. Permetti le cartelle specifiche e tutto il loro contenuto
+!marconi_formula/
+!marconi_formula/**
+!validation/
+!validation/**
+
+# 4. Permetti solo uno script specifico nella cartella scripts
+!scripts/
+scripts/*
+!scripts/04_0_prepare_qtc_dataset.py
+
+# 5. Esclusioni standard (sempre utili)
 .venv/
-
-# Dati e Dataset (PhysioNet, ecc.)
-data/
-
-# Cartelle personali
-
-
-# Cartella di sistema Git
-.git/
-
-# Script di configurazione specifica
-setup_project.ipynb
-pipeline.ipynb
-
-# File temporanei Python e Notebook
 __pycache__/
-*.pyc
-.ipynb_checkpoints/
-.pytest_cache
+.DS_Store
