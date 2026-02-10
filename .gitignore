@@ -4,6 +4,7 @@
 # 2. Permetti i file indispensabili nella root
 !README.md
 !requirements.txt
+!LICENSE
 !.gitignore
 
 # 3. Permetti le cartelle specifiche e tutto il loro contenuto
