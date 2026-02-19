@@ -1214,10 +1214,10 @@ def load_discovered_formulas(sr_output_dir: Path) -> List[Dict[str, Any]]:
     top10_file = list(sr_output_dir.glob("*_equations_top10.csv"))
 
     if top10_file:
-        df = pd.read_csv(top10_file[0])
+        df = pd.read_csv(top10_file[0], sep=';', decimal=',')
         log_info(f"Caricato {top10_file[0].name}: {len(df)} formule")
     elif unified_file:
-        df = pd.read_csv(unified_file[0])
+        df = pd.read_csv(unified_file[0], sep=';', decimal=',')
         log_info(f"Caricato {unified_file[0].name}: {len(df)} formule")
     else:
         log_warning(f"Nessun file equazioni trovato in {sr_output_dir}")
@@ -1246,7 +1246,7 @@ def load_qtc_data(dataset: str, base_path: Path) -> Optional[pd.DataFrame]:
         log_warning(f"File non trovato: {qtc_file}")
         return None
 
-    df = pd.read_csv(qtc_file)
+    df = pd.read_csv(qtc_file, sep=';', decimal=',')
     log_info(f"Caricato {dataset}: {len(df)} record")
     return df
 
@@ -1606,7 +1606,7 @@ Esempi:
     summary_df = summary_df.sort_values("weighted_abs_r", ascending=True)
 
     summary_file = output_dir / f"{file_prefix}_validation_summary.csv"
-    summary_df.to_csv(summary_file, index=False)
+    summary_df.to_csv(summary_file, index=False, sep=';', decimal=',')
     log_info(f"Tabella riassuntiva salvata: {summary_file}")
 
     # Stampa risultati principali

@@ -225,7 +225,8 @@ def calculate_qtc_reference(df: pd.DataFrame) -> pd.DataFrame:
     logger.info(f"Mean QT: {qt_mean:.2f} ms")
     
     # QTc reference
-    df['QTc_reference_ms'] = qt_ms - qt_expected + qt_mean
+    qt_at_rr1 = np.polyval(coeffs, 1.0)
+    df['QTc_reference_ms'] = qt_ms - qt_expected + qt_at_rr1
     df['QT_expected_ms'] = qt_expected
     
     # Verify HR independence
